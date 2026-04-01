@@ -41,18 +41,16 @@ class MainActivity : ComponentActivity() {
 fun HomeScreen() {
     Column(
         modifier = Modifier
-            .padding(innerPadding)
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxSize()        .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally, // Centers items horizontally
+        verticalArrangement = Arrangement.Center           // Centers the whole stack vertically
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextButton(onClick = { /* Handle save */ }) {
-                Text("Save", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                Text("+", color = MaterialTheme.colorScheme.primary, fontSize = 32.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
