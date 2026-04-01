@@ -6,13 +6,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,26 +29,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SplitItTheme {
-                HomeScreen()
-            }
-        }
-    }
-}
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HomeScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()        .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally, // Centers items horizontally
-        verticalArrangement = Arrangement.Center           // Centers the whole stack vertically
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextButton(onClick = { /* Handle save */ }) {
-                Text("+", color = MaterialTheme.colorScheme.primary, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                // Basic Navigation Logic
+                var currentScreen by remember { mutableStateOf("home") }
+
+                if (currentScreen == "home") {
+                    HomeScreen(onAddExpenseClick = { currentScreen = "add_expense" })
+                } else {
+                    AddExpenseScreen(onBack = { currentScreen = "home" })
+                }
             }
         }
     }
@@ -58,7 +44,93 @@ fun HomeScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddExpenseScreen() {
+fun HomeScreen(onAddExpenseClick: () -> Unit) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Split It", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = { /* Settings or Profile */ }) {
+                        Icon(Icons.Default.Person, contentDescription = null)
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddExpenseClick,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White,
+                shape = CircleShape
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Expense")
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // Balance Summary Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text("Total balance", fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text("$0.00", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Column {
+                            Text("You owe", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
+                            Text("$0.00", fontWeight = FontWeight.Bold, color = Color.Red)
+                        }
+                        Column {
+                            Text("You are owed", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
+                            Text("$0.00", fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32)) // Dark Green
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Empty State
+            Column(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    Icons.Default.Description,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "No expenses yet.",
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    fontSize = 16.sp
+                )
+                Text(
+                    "Tap + to add your first split!",
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                    fontSize = 14.sp
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddExpenseScreen(onBack: () -> Unit) {
     var description by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var numberOfPeople by remember { mutableStateOf("2") }
@@ -68,12 +140,12 @@ fun AddExpenseScreen() {
             TopAppBar(
                 title = { Text("Add an expense", fontSize = 18.sp) },
                 navigationIcon = {
-                    IconButton(onClick = { /* Handle close */ }) {
+                    IconButton(onClick = { onBack() }) {
                         Icon(Icons.Default.Close, contentDescription = "Close")
                     }
                 },
                 actions = {
-                    TextButton(onClick = { /* Handle save */ }) {
+                    TextButton(onClick = { onBack() }) {
                         Text("Save", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     }
                 },
@@ -197,9 +269,9 @@ fun AddExpenseScreen() {
                     fontWeight = FontWeight.Medium
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Simplified "Number of People" selector for this demo
             OutlinedTextField(
                 value = numberOfPeople,
@@ -211,13 +283,5 @@ fun AddExpenseScreen() {
                 shape = RoundedCornerShape(12.dp)
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AddExpensePreview() {
-    SplitItTheme {
-        AddExpenseScreen()
     }
 }
